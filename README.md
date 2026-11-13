@@ -23,20 +23,27 @@ Since the "key" can be plaintext UTF strings, the actual key will be an ID with 
 ```json
 {
   "entries": {
-    "github": {
-      "username": "user@example.com",
-      "password": "example-only-not-a-real-password",
-      "notes": "Personal account"
+    "<openssl hex 16>": {
+        "key"": "github",
+        "username": "user@example.com",
+        "password": "password",
+        "notes": "Personal account"
     }
   }
 }
 ```
 
-This is an example of the **decrypted in-memory representation**, not a plaintext file written to disk.
+This is an example of the decrypted loaded representation and not a plaintext file written to disk.
+
+### Issues
+
+- need to find some hash function to make this map searchable well.
 
 ## Security design
 
 ### Encryption at rest
+
+This is an example security design for us to build off of.
 
 1. Generate a random 256-bit **data encryption key (DEK)** when creating a vault.
 2. Serialize the entries in memory.
@@ -54,6 +61,7 @@ The DEK is independent of the master password so the password can be changed by 
 - Calibrate Argon2id parameters for the target machine; record exact parameters in the vault header for future compatibility.
 
 The master password is never stored. A lost master password cannot be recovered from the vault file alone.
+There should be a recovery option but not sure right now what it would be
 
 ### Optional macOS Touch ID
 
@@ -88,7 +96,7 @@ The format is **not finalized**. Avoid producing permanent vault files until mig
 | Minimize secret lifetime in memory  | [`zeroize`](https://crates.io/crates/zeroize)                                                   |
 | Hidden CLI password prompts         | [`rpassword`](https://crates.io/crates/rpassword)                                               |
 | macOS biometric-gated access        | Apple Security and LocalAuthentication frameworks                                               |
-| Optional GUI                        | Tauri or `egui` (to be decided)                                                                 |
+| Optional GUI                        | ratatui                                                                                         |
 
 Dependencies and versions will be pinned as implementation begins.
 
@@ -117,7 +125,7 @@ Commands that reveal or copy secrets should require an unlocked vault. The CLI m
 - Offline password guessing, subject to master-password strength and Argon2id cost.
 - Undetected modifications to encrypted vault data.
 
-**Not designed to fully protect against:**
+**Not designed to fully protect against (for now):**
 
 - Malware, keyloggers, or an attacker controlling the machine while the vault is unlocked.
 - Secrets captured from application memory, swap, screenshots, or clipboard history.
@@ -141,17 +149,16 @@ Full-disk encryption (FileVault), OS updates, and device security are recommende
 
 ## Roadmap
 
+- [ ] Begin with basic KV storage and UI
 - [ ] Define and document the versioned vault format and threat model.
 - [ ] Implement vault creation, Argon2id key derivation, and DEK wrapping.
 - [ ] Implement encrypted save/load with authenticated metadata.
 - [ ] Implement CLI CRUD operations and secure password prompting.
 - [ ] Add tests for wrong passwords, tampering, invalid input, and nonce handling.
+- [ ] Add macOS Keychain + Touch ID unlock.
 - [ ] Implement atomic saves, encrypted backups, and recovery tests.
-- [ ] Add master-password rotation.
-- [ ] Add optional macOS Keychain + Touch ID unlock.
 - [ ] Add auto-lock and safer clipboard behavior.
-- [ ] Evaluate a minimal desktop GUI.
-- [ ] Arrange independent security review before relying on the application for important credentials.
+- [ ] Polish UI
 
 ## Building
 
@@ -174,5 +181,3 @@ Security-sensitive changes should include tests and an explanation of their impa
 This is an experimental password-manager project, **not an audited security product**. Use an established password manager for critical credentials until Vault has been implemented, tested, and independently reviewed.
 
 ## License
-
-To be decided.
