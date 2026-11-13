@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(**/*.rs)",
+      "Edit(**/Cargo.toml)",
+      "Bash(cargo init*)",
+      "Bash(cargo new*)",
+      "Bash(cargo add*)",
+      "Bash(cargo fix*)",
+      "Bash(cargo clippy*--fix*)"
+    ]
+  }
+}
