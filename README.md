@@ -178,6 +178,6 @@ Security-sensitive changes should include tests and an explanation of their impa
 
 ## Disclaimer
 
-This is an experimental password-manager project, **not an audited security product**. Use an established password manager for critical credentials until Vault has been implemented, tested, and independently reviewed.
+This is an experimental password-manager project, **not an audited security product**. Use an established password manager for critical credentials until Crypt has been implemented, tested, and independently reviewed.
 
 ## License
