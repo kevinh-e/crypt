@@ -6,15 +6,21 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use dirs::data_local_dir;
 
-fn main() -> Result<()> {
-    let save_path: PathBuf = data_local_dir().context("Could not find data directory")?;
+const DEFAULT_SAVE_LOCATION: &str = "crypt/save";
 
-    init_save(save_path).context("Could not load saved Crypt")?;
+fn main() -> Result<()> {
+    let save_path: PathBuf = data_local_dir()
+        .context("Could not find data directory")?
+        .join(DEFAULT_SAVE_LOCATION);
+    print!("{:?}", save_path);
+    init_save(save_path).context("Failed to load saved Crypt")?;
+
     Ok(())
 }
 
-///
-fn init_save(save_path: impl AsRef<Path>) -> Result<Crypt> {}
+fn init_save(save_path: impl AsRef<Path>) -> Result<Crypt> {
+    todo!()
+}
 
 // todo list:
 // create vault objects (in memory)
