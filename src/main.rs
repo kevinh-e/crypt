@@ -5,7 +5,7 @@ use std::fs::{self, File, OpenOptions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Error, Result};
 use dirs::data_local_dir;
 use zeroize::Zeroizing;
 
@@ -19,7 +19,9 @@ fn main() -> Result<()> {
         .join(DEFAULT_SAVE_NAME);
     print!("{:?}", save_path);
 
-    init_save(save_path).context("Failed to load saved Crypt")?;
+    let c = init_save(save_path).context("Failed to load saved Crypt")?;
+
+    print!("{:?}", c);
 
     Ok(())
 }
@@ -30,26 +32,30 @@ fn main() -> Result<()> {
 fn init_save(save_path: impl AsRef<Path>) -> Result<Crypt> {
     fs::create_dir_all(DEFAULT_DATA_LOCATION)?;
 
-    // try a temp file from previous incomplete save
+    if OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .open(&save_path)
+        .is_ok()
+    {
+        return Ok(Crypt::new());
+    };
+
+    // try a temp file from previous incomplete save, otherwise load normally
     let temp_savepath: PathBuf = save_path.as_ref().with_extension("tmp");
-    let mut file = load_file(temp_savepath)?;
+    let c = match load_file(temp_savepath) {
+        Ok(c) => c,
+        // assuming permissions are valid
+        Err(_) => load_file(save_path)?,
+    };
 
-    // create buffer with same size as file, since zeroize isn't complete when Vec grows
-    let mut buf = Zeroizing::new(Vec::with_capacity(file.metadata()?.len().try_into()?));
-    file.read_to_end(&mut buf)?;
-
-    let c = Crypt::from_bytes(&buf);
-
-    // actual save
-    let file = load_file(save_path)?;
-    todo!()
+    Ok(c)
 }
 
-fn load_file(filepath: impl AsRef<Path>) -> Result<File> {
-    OpenOptions::new()
-        .read(true)
-        .open(&filepath)
-        .with_context(|| format!("Failed to read file {}", filepath.as_ref().display()))
+fn load_file(filepath: impl AsRef<Path>) -> Result<Crypt> {
+    // the buf is already statically sized from read
+    let buf = Zeroizing::new(fs::read(filepath)?);
+    Crypt::from_bytes(&buf)
 }
 
 // todo list:

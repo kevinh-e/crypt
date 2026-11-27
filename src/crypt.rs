@@ -20,6 +20,11 @@ pub struct Entry {
 }
 
 impl Crypt {
+    pub fn new() -> Crypt {
+        Crypt {
+            entries: BTreeMap::new(),
+        }
+    }
     /// doesn't need ownership, buffer zeroizes on drop
     pub fn from_bytes(s: &[u8]) -> Result<Crypt> {
         let c: Crypt = serde_json::from_slice(&s)?;
